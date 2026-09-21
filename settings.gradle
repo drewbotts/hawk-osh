@@ -1,0 +1,52 @@
+rootProject.name = 'hawk-osh'
+gradle.ext.oshCoreDir = "$rootDir/include/osh-core"
+gradle.ext.oshAddonsDir = "$rootDir/include/osh-addons"
+
+// osh-core
+includeBuild gradle.oshCoreDir
+
+// Modules from osh-addons that get built into this node. This is the only list to edit when adding
+// a driver: each name is located by folder name anywhere under include/osh-addons, and build.gradle
+// adds every entry to the distribution.
+//
+// A module that depends on another addon via project(':...') needs that one listed here too
+// (e.g. sensorhub-comm-ble-dbus requires sensorhub-comm-ble).
+gradle.ext.addonModules = [
+    // comm
+    'sensorhub-comm-ble',
+    'sensorhub-comm-ble-dbus',      // BlueZ / D-Bus, Linux only at runtime
+    'sensorhub-comm-jssc',          // serial
+
+    // sensors
+    'sensorhub-driver-fakeweather', // simulated, only here to smoke-test the node
+]
+
+// index every module folder in osh-addons by name
+def addonDirs = [:]
+fileTree(gradle.oshAddonsDir).include('**/build.gradle').exclude('dist', 'test', '**/build/**').files.each { File f ->
+    File projectFolder = f.parentFile
+    if (projectFolder != file(gradle.oshAddonsDir)) {
+        addonDirs[projectFolder.name] = projectFolder
+    }
+}
+
+gradle.addonModules.each { String name ->
+    File projectFolder = addonDirs[name]
+    if (projectFolder == null) {
+        throw new GradleException("Module '$name' not found under $gradle.oshAddonsDir. " +
+                "Check the name, and that submodules are checked out (git submodule update --init).")
+    }
+    include name
+    project(":$name").projectDir = projectFolder
+}
+
+// SensorHub Test - IDE debugging module, never packaged in the distribution
+FileTree subprojects = fileTree("$rootDir/tools").include('**/build.gradle')
+subprojects.files.each { File f ->
+    File projectFolder = f.parentFile
+    if (projectFolder != rootDir) {
+        String projectName = ':' + projectFolder.name
+        include projectName
+        project(projectName).projectDir = projectFolder
+    }
+}

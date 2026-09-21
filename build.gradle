@@ -1,0 +1,48 @@
+apply from: gradle.oshCoreDir + '/common.gradle'
+
+version = '0.1.0'
+description = 'Hawk Camper OSH Node'
+
+subprojects {
+    // default for addon modules that don't set their own version
+    version = oshCoreVersion
+
+    // inject all repositories from included builds if any
+    repositories.addAll(rootProject.repositories)
+}
+
+dependencies {
+    // FROM OSH-CORE
+    implementation 'org.sensorhub:sensorhub-core:' + oshCoreVersion
+    implementation 'org.sensorhub:sensorhub-datastore-h2:' + oshCoreVersion
+    implementation 'org.sensorhub:sensorhub-service-swe:' + oshCoreVersion
+    implementation 'org.sensorhub:sensorhub-service-consys:' + oshCoreVersion
+    implementation 'org.sensorhub:sensorhub-webui-core:' + oshCoreVersion
+
+    // FROM OSH-ADDONS
+    // everything listed in addonModules in settings.gradle
+    gradle.addonModules.each { name ->
+        implementation project(":$name")
+    }
+}
+
+distributions {
+    main {
+        distributionBaseName = 'hawk-osh'
+        contents {
+            from 'README.md'
+            from 'dist/scripts'
+            into('config') {
+                from 'dist/config'
+            }
+            into('lib') {
+                from project.configurations.runtimeClasspath
+            }
+            subprojects.each { p ->
+                into('config/sensorML') {
+                    from("${p.projectDir}/sensorML")
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,17 @@
+**/bin/
+**/target/
+**/build/
+**/.gradle/
+**/.DStore
+**/.DS_Store
+**/.settings
+**/.project
+**/.classpath
+**/.idea
+**/*.iml
+/storage/
+/data/
+/db/
+/*.db
+**/**/config.json.bak.*
+/.moduledata/

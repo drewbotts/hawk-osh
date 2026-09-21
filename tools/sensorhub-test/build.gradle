@@ -1,0 +1,28 @@
+apply plugin: 'java'
+description = 'Main Test Project'
+targetCompatibility = 17
+
+dependencies {
+    implementation 'org.sensorhub:sensorhub-core:' + oshCoreVersion
+    implementation 'org.sensorhub:sensorhub-datastore-h2:' + oshCoreVersion
+    implementation 'org.sensorhub:sensorhub-service-swe:' + oshCoreVersion
+    implementation 'org.sensorhub:sensorhub-webui-core:' + oshCoreVersion
+    implementation 'org.sensorhub:sensorhub-service-consys:' + oshCoreVersion
+
+    // every module listed in addonModules in settings.gradle is available for debugging
+    gradle.addonModules.each { name ->
+        implementation project(":$name")
+    }
+
+    // Do not add this "sensorhub-test" project to the root build.gradle, it would get packaged
+    // with the node.
+}
+
+// ./gradlew :sensorhub-test:run starts the node with src/main/resources/config.json
+tasks.register('run', JavaExec) {
+    group = 'application'
+    description = 'Runs the node in place with the test config'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.sensorhub.node.test.TestSensorHub'
+    workingDir = rootDir
+}
