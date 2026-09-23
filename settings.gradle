@@ -23,6 +23,7 @@ gradle.ext.addonModules = [
     'sensorhub-utils-power',        // shared schema + parsers, required by the two drivers below
     'sensorhub-driver-victron',     // SmartSolar MPPT / Phoenix inverter over VE.Direct serial
     'sensorhub-driver-jbd',         // JBD BMS via the BLE -> MQTT collector in deploy/jbd-bridge
+    'sensorhub-driver-mopeka',      // Mopeka propane tank sensor via the BLE -> MQTT collector
 ]
 
 // index every module folder in osh-addons by name
