@@ -1,0 +1,12 @@
+[Unit]
+Description=JBD BMS BLE to MQTT bridge
+After=bluetooth.target mosquitto.service
+Wants=mosquitto.service
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/camper/jbd_ble_mqtt.py --mac CHANGE_ME
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

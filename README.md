@@ -12,6 +12,7 @@ code lives in the submodules under `include/`.
 | `dist/config` | `config.json` and `logback.xml` shipped with the node |
 | `dist/scripts` | launch scripts shipped with the node |
 | `tools/sensorhub-test` | runs the node in place for debugging, never packaged |
+| `deploy/jbd-bridge` | Python BLE to MQTT collector for the JBD BMS, plus its systemd unit (runs next to the node, not packaged) |
 
 ## Requirements
 
@@ -68,6 +69,31 @@ Nothing else needs editing: `build.gradle` and `tools/sensorhub-test` both pick 
 
 `sensorhub-driver-fakeweather` is only in the list to smoke-test the node and can be removed once a
 real driver is in.
+
+## Power drivers
+
+Both live in `include/osh-addons/sensors/power` and share `sensorhub-utils-power` (schema helper,
+POJOs, VE.Direct and JBD parsers).
+
+- `sensorhub-driver-victron`: SmartSolar MPPT / Phoenix inverter over VE.Direct serial, one module
+  instance per device. `commSettings` takes any serial comm provider in the node:
+  `com.botts.impl.comm.jssc.JsscSerialCommProviderConfig` (natives bundled) or
+  `org.sensorhub.impl.comm.rxtx.RxtxSerialCommProviderConfig` (needs the RXTX native library on the
+  host, e.g. `apt install librxtx-java`), both with an `org.sensorhub.impl.comm.UARTConfig`
+  protocol at 19200 8N1.
+- `sensorhub-driver-jbd`: JBD BMS. BLE stays out of the JVM: `deploy/jbd-bridge/jbd_ble_mqtt.py`
+  publishes `BatteryStatus` JSON to a local Mosquitto broker and the driver subscribes to it.
+
+Collector setup on the Pi:
+
+```sh
+sudo apt install mosquitto python3-pip
+pip3 install -r deploy/jbd-bridge/requirements.txt
+sudo install -D deploy/jbd-bridge/jbd_ble_mqtt.py /opt/camper/jbd_ble_mqtt.py
+sudo cp deploy/jbd-bridge/jbd-bridge.service /etc/systemd/system/   # set --mac first
+sudo systemctl enable --now jbd-bridge
+mosquitto_sub -t 'camper/battery/#' -v                              # sanity check
+```
 
 ## Debugging a driver
 

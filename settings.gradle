@@ -16,9 +16,13 @@ gradle.ext.addonModules = [
     'sensorhub-comm-ble',
     'sensorhub-comm-ble-dbus',      // BlueZ / D-Bus, Linux only at runtime
     'sensorhub-comm-jssc',          // serial
+    'sensorhub-comm-rxtx',          // serial (RXTX), alternative provider for the Victron driver
 
     // sensors
     'sensorhub-driver-fakeweather', // simulated, only here to smoke-test the node
+    'sensorhub-utils-power',        // shared schema + parsers, required by the two drivers below
+    'sensorhub-driver-victron',     // SmartSolar MPPT / Phoenix inverter over VE.Direct serial
+    'sensorhub-driver-jbd',         // JBD BMS via the BLE -> MQTT collector in deploy/jbd-bridge
 ]
 
 // index every module folder in osh-addons by name
